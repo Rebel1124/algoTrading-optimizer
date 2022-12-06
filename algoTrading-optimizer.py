@@ -28,11 +28,7 @@ if __name__ == '__main__':
     from sklearn.preprocessing import StandardScaler
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, classification_report
-    
-    # Needed for decision tree visualization
-    import pydotplus
-    #from IPython.display import Image
-    
+       
     # Standard/Set Inputs
 
     # Time Interval
