@@ -38,6 +38,7 @@ if __name__ == '__main__':
     # Time Interval
     timePeriod="max"
     daily="1d"
+    now = datetime.date.today()
 
     # Portfolio Metrics
     initial = 10000
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     # Date Settings
     st.sidebar.markdown("<h4 style='text-align: left; color: #551A8B; padding-left: 0px; font-size: 20px'><b>Date Settings<b></h4>", unsafe_allow_html=True)
     start_date = st.sidebar.date_input('Start Date',date(2006,6,30)).strftime("%Y-%m-%d")
-    end_date = st.sidebar.date_input('End Date',date(2022,11,1)).strftime("%Y-%m-%d")
+    end_date = st.sidebar.date_input('End Date',now).strftime("%Y-%m-%d")
     training_months = st.sidebar.number_input('Training Months', min_value=minValue, max_value=maxValue, step=1, value=val)
     
     
@@ -300,8 +301,7 @@ if __name__ == '__main__':
                                 macdSignalIndicatorName: newMACDSignalIndicatorName}, axis=1)
         
         return algoDataDaily
-
-
+    
     # Calculate Feature Z_Scores
     @st.cache(allow_output_mutation=True)
     def Zscore(algoData, featuresRaw, rollingWindow):
@@ -347,8 +347,60 @@ if __name__ == '__main__':
         algoData = algoData.ffill(axis = 0)
         
         return algoData
+    
+    # Calculate percentage Asset Returns
+    @st.cache(allow_output_mutation=True)
+    def pctReturns(algoData, assetNames):
+        
+        lastDay = algoData['Close'][-1]
+        oneDay = algoData['Close'][-2]
+        oneWeek = algoData['Close'][-6]
+        oneMonth = algoData['Close'][-22]
+        oneQuarter = algoData['Close'][-65]
+        oneYear = algoData['Close'][-365]
+        
+        oneDaypct = round((lastDay/oneDay)-1,6)
+        oneWeekpct = round((lastDay/oneWeek)-1,6)
+        oneMonthpct = round((lastDay/oneMonth)-1,6)
+        oneQuarterpct = round((lastDay/oneQuarter)-1,6)
+        oneYearpct = round((lastDay/oneYear)-1,6)
+        
+        
+        colours = ['lavender']
+        val = [assetNames]
+
+        pctReturns = [oneDaypct, oneWeekpct, oneMonthpct, oneQuarterpct, oneYearpct]
+        
+        
+        for ret in pctReturns:
+            if(ret > 0):
+                colours.append('#98FB98')
+                val.append('{:.2%}'.format(ret)+'  ↑')
+            elif(ret < 0):
+                colours.append('#F08080')
+                val.append('{:.2%}'.format(ret)+'  ↓')
+            else:
+                colours.append('#E3CF57')
+                val.append('{:.2%}'.format(ret)+'  -')
+
+        
+        head = ['Security', 'Day', 'Week', 'Month', 'Quarter', 'Year']
 
 
+        fig14 = go.Figure(data=[go.Table(
+            header=dict(values=head,
+                    fill_color='paleturquoise',
+                    align='center'),
+            cells=dict(values=val,
+                fill_color=colours,
+                align='center'))
+        ])
+
+        fig14.update_layout(margin=dict(l=0, r=0, b=0,t=0), width=950, height=50)
+
+        return fig14
+    
+    
     algoData = dailyIndicators(assetCodes, assetNames, timePeriod, daily, days, start_date, end_date, dailyEMAShort, dailyEMALong, rsiLength, momLength, rocLength, 
                     smaLength, bbandsLength, macdFast, macdSlow, macdSignal, dailyEMAShortIndicatorName, dailyEMALongIndicatorName,
                     rsiIndicatorName, momIndicatorName, rocIndicatorName, smaIndicatorName, bollingerLowerIndicatorName, bollingerMiddleIndicatorName, bollingerUpperIndicatorName, bollingerStdIndicatorName, macdIndicatorName,
@@ -1304,6 +1356,21 @@ if __name__ == '__main__':
     rfModelPerf = pd.concat(rfModelPerformance, axis=1)  
     
     rfdescriptiveStats = descriptiveRFStats(rfModelPerf, assetNames)
+    
+    
+    #################################################################
+    
+    
+    pctAssetReturns = pctReturns(algoData, assetNames)
+    
+    pctAssetReturns
+    
+    ##############################################################
+    
+    
+    
+    
+    
 
     st.markdown("<h3 style='text-align: left; color: #872657; padding-left: 0px; font-size: 40px'><b>Technical Indicators - Trading Strategies - Data Download<b></h3>", unsafe_allow_html=True) 
     
