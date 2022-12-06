@@ -106,7 +106,7 @@ if __name__ == '__main__':
     st.sidebar.markdown(' ')
     
     # Risk Limit (Strategy Stop Loss)
-    st.sidebar.markdown("<h4 style='text-align: left; color: #551A8B; padding-left: 0px; font-size: 20px'><b>Risk Limit - Max. Percentage Loss on Trade<b></h4>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h4 style='text-align: left; color: #551A8B; padding-left: 0px; font-size: 20px'><b>Risk Limit<b></h4>", unsafe_allow_html=True)
     risk = (st.sidebar.number_input('Position Stop/Loss (%)', min_value=0, max_value=100, step=5, value=10))/100
     
     st.sidebar.markdown(' ')
