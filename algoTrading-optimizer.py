@@ -380,21 +380,118 @@ if __name__ == '__main__':
                 val.append('{:.2%}'.format(ret)+'  -')
 
         
-        head = ['Security', 'Day', 'Week', 'Month', 'Quarter', 'Year']
+        head = ['Returns', 'Day', 'Week', 'Month', 'Quarter', 'Year']
 
 
         fig14 = go.Figure(data=[go.Table(
             header=dict(values=head,
-                    fill_color='paleturquoise',
-                    align='center'),
+                    fill_color='#551A8B',
+                    align='center',
+                    font=dict(color='white')),
             cells=dict(values=val,
                 fill_color=colours,
                 align='center'))
         ])
 
-        fig14.update_layout(margin=dict(l=0, r=0, b=0,t=0), width=950, height=50)
+        fig14.update_layout(margin=dict(l=0, r=0, b=0,t=0), width=425, height=50)
 
         return fig14
+    
+    
+    # Calculate algo Signals
+    @st.cache(allow_output_mutation=True)
+    def algoSignals(allStrategyReturnsTest, assetNames):
+        
+        
+        macd = allStrategyReturnsTest['MACDStrategy'][-1]
+        rsi = allStrategyReturnsTest['RSIStrategy'][-1]
+        impulse = allStrategyReturnsTest['ImpulseStrategy'][-1]
+        bollinger = allStrategyReturnsTest['BBStrategy'][-1]
+        
+        
+        colours = ['lavender']
+        val = [assetNames]
+
+        algoStrategy = [macd, rsi, impulse, bollinger]
+        
+        
+        for ret in algoStrategy:
+            if(ret > 0):
+                colours.append('#98FB98')
+                val.append('Buy')
+            elif(ret < 0):
+                colours.append('#F08080')
+                val.append('Sell')
+            else:
+                colours.append('#E3CF57')
+                val.append('Hold')
+
+        
+        head = ['Algo', 'MACD', 'RSI', 'Impulse', 'Bollinger']
+
+
+        fig15 = go.Figure(data=[go.Table(
+            header=dict(values=head,
+                    fill_color='#551A8B',
+                    align='center',
+                    font=dict(color='white')),
+            cells=dict(values=val,
+                fill_color=colours,
+                align='center'))
+        ])
+
+        fig15.update_layout(margin=dict(l=0, r=0, b=0,t=0), width=425, height=50)
+
+        return fig15
+    
+    
+    
+    
+    # Calculate algo Signals
+    @st.cache(allow_output_mutation=True)
+    def rfSignals(allStrategyReturnsTest, assetNames):
+        
+        
+        standard = allStrategyReturnsTest['pred_standard'][-1]
+        zscores = allStrategyReturnsTest['pred_zscores'][-1]
+        normalized = allStrategyReturnsTest['pred_normalized'][-1]
+        
+        
+        colours = ['lavender']
+        val = [assetNames]
+
+        rfStrategy = [standard, zscores, normalized]
+        
+        
+        for ret in rfStrategy:
+            if(ret > 0):
+                colours.append('#98FB98')
+                val.append('Buy')
+            elif(ret < 0):
+                colours.append('#F08080')
+                val.append('Sell')
+            else:
+                colours.append('#E3CF57')
+                val.append('Hold')
+
+        
+        head = ['RF', 'standard', 'zScores', 'normalized']
+
+
+        fig16 = go.Figure(data=[go.Table(
+            header=dict(values=head,
+                    fill_color='#551A8B',
+                    align='center',
+                    font=dict(color='white')),
+            cells=dict(values=val,
+                fill_color=colours,
+                align='center'))
+        ])
+
+        fig16.update_layout(margin=dict(l=0, r=0, b=0,t=0), width=425, height=50)
+
+        return fig16
+    
     
     
     algoData = dailyIndicators(assetCodes, assetNames, timePeriod, daily, days, start_date, end_date, dailyEMAShort, dailyEMALong, rsiLength, momLength, rocLength, 
@@ -1340,7 +1437,14 @@ if __name__ == '__main__':
     StrategyReturns['zScores'] = StrategyReturns.iloc[:,9]
     StrategyReturns['normalized'] = StrategyReturns.iloc[:,14]
     StrategyReturns = StrategyReturns.drop(['ActualReturns', 'cumActualReturns', 'cumStrategyReturns',
-                                        'StrategyReturns', 'Predicted'], axis=1)
+                                        'StrategyReturns'], axis=1)
+    
+    
+    StrategyReturns['pred_standard'] = StrategyReturns.iloc[:,0]
+    StrategyReturns['pred_zscores'] = StrategyReturns.iloc[:,1]
+    StrategyReturns['pred_normalized'] = StrategyReturns.iloc[:,2]
+    
+    StrategyReturns = StrategyReturns.drop(['Predicted'], axis=1)
     
     StrategyReturnsDf = convert_df(StrategyReturns)
 
@@ -1356,11 +1460,22 @@ if __name__ == '__main__':
     
     #################################################################
     
-    
     pctAssetReturns = pctReturns(algoData, assetNames)
+    algoSignals = algoSignals(allStrategyReturnsTest, assetNames)
+    rfSignals = rfSignals(StrategyReturns, assetNames)
     
-    pctAssetReturns
+    ret, algo, rf = st.columns([1,1,1])
     
+    
+    ret.plotly_chart(pctAssetReturns, use_column_width=True)
+    
+    
+    algo.plotly_chart(algoSignals, use_column_width=True)
+    
+    rf.plotly_chart(rfSignals,use_column_width=True)
+    
+    
+    #d.plotly_chart(rfdescriptiveStats, use_column_width=True)
     ##############################################################
     
     
@@ -1484,24 +1599,5 @@ if __name__ == '__main__':
     d.plotly_chart(rfdescriptiveStats, use_column_width=True)
     
     #st.write(rfModelPerformance)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     #################################################################################################################################
